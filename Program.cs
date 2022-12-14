@@ -9,34 +9,37 @@ namespace BattleBoatsProject
         static void Main(string[] args)
         {
             //create a new array to store the players boatrs and fill it with -
-            char[,] playerBoatsArray = new char[8, 8];
-            for (int i = 0; i < playerBoatsArray.GetLength(0); i++)
-            {
-                for (int j = 0; j < playerBoatsArray.GetLength(1); j++)
-                {
-                    playerBoatsArray[j, i] = '-';
-                }
-            }
+            char[,] playerBoatsArray = NewArray(8, 8);
+
             //get the player to place the boats
             playerBoatsArray = PlayerBoatsPlacement(playerBoatsArray);
 
-            Console.Clear();
+            //create a new array to store the computers boats
+            char[,] computerBoatsArray = NewArray(8, 8);
 
-            //create a new array to store the computers boats and fill it with -
-            char[,] computerBoatsArray = new char[8, 8];
-            for (int i = 0; i < computerBoatsArray.GetLength(0); i++)
-            {
-                for (int j = 0; j < computerBoatsArray.GetLength(1); j++)
-                {
-                    computerBoatsArray[j, i] = '-';
-                }
-            }
+            //generate the computers boats
             computerBoatsArray = GenerateBoats(computerBoatsArray);
 
+
+            //display for debug purposes
             CreatePlacementView(computerBoatsArray);
 
 
             Console.ReadLine();
+        }
+
+        static char[,] NewArray(int X, int Y)
+        {
+            char[,] returnArray = new char[X, Y];
+            for (int i = 0; i < returnArray.GetLength(0); i++)
+            {
+                for (int j = 0; j < returnArray.GetLength(1); j++)
+                {
+                    returnArray[j, i] = '-';
+                }
+            }
+
+            return returnArray;
         }
 
         static void CreatePlacementView(char[,] board)
