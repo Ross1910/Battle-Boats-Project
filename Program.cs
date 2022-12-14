@@ -641,7 +641,6 @@ namespace BattleBoatsProject
     {
         public static void Turn(char[,] shotsBoard, char[,] boatsBoard, ref bool searching, ref int[] lastShot, ref int direction)
         {
-            System.Console.WriteLine("A");
             if (searching)
             {
                 searching = false;
