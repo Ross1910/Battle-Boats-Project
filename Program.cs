@@ -8,9 +8,35 @@ namespace BattleBoatsProject
 
         static void Main(string[] args)
         {
+            //create a new array to store the players boatrs and fill it with -
             char[,] playerBoatsArray = new char[8, 8];
+            for (int i = 0; i < playerBoatsArray.GetLength(0); i++)
+            {
+                for (int j = 0; j < playerBoatsArray.GetLength(1); j++)
+                {
+                    playerBoatsArray[j, i] = '-';
+                }
+            }
             //get the player to place the boats
             playerBoatsArray = PlayerBoatsPlacement(playerBoatsArray);
+
+            Console.Clear();
+
+            //create a new array to store the computers boats and fill it with -
+            char[,] computerBoatsArray = new char[8, 8];
+            for (int i = 0; i < computerBoatsArray.GetLength(0); i++)
+            {
+                for (int j = 0; j < computerBoatsArray.GetLength(1); j++)
+                {
+                    computerBoatsArray[j, i] = '-';
+                }
+            }
+            computerBoatsArray = GenerateBoats(computerBoatsArray);
+
+            CreatePlacementView(computerBoatsArray);
+
+
+            Console.ReadLine();
         }
 
         static void CreatePlacementView(char[,] board)
@@ -85,6 +111,9 @@ namespace BattleBoatsProject
                     if (tempboatY >= 0 && !tempboatR && tempboatY + boatLength <= 8) { boatY = tempboatY; }
                     else if (tempboatY >= 0 && tempboatR && tempboatY <= 7) { boatY = tempboatY; }
 
+                    if (!boatR && boatX < 9 - boatLength) { boatR = tempboatR; }
+                    else if (boatR && boatY < 9 - boatLength) { boatR = tempboatR; }
+
                     //check that the placement doesnt overlap with another boat
                     overlap = false;
                     for (int j = 0; j < boatLength; j++)
@@ -116,6 +145,52 @@ namespace BattleBoatsProject
                 {
                     if (boatR) { board[boatX + j, boatY] = '#'; }
                     else { board[boatX, boatY + j] = '#'; }
+                }
+
+            }
+            return board;
+        }
+
+        static char[,] GenerateBoats(char[,] board)
+        {
+            Random random = new Random();
+            for (int i = 0; i < boatLengths.Length; i++)
+            {
+                bool valid = false;
+
+                int boatX = 0;
+                int boatY = 0;
+                bool boatR = true;
+                int boatLength = boatLengths[i];
+
+
+                while (!valid)
+                {
+                    boatR = ((int)random.Next(0, 2)) == 0;
+                    if (boatR)
+                    {
+                        boatX = random.Next(0, 8 - boatLength);
+                        boatY = random.Next(0, 7);
+                    }
+                    else
+                    {
+                        boatX = random.Next(0, 7);
+                        boatY = random.Next(0, 8 - boatLength);
+                    }
+
+                    valid = true;
+                    for (int j = 0; j < boatLength; j++)
+                    {
+                        if ((boatR && board[boatX + j, boatY] == '#') || (!boatR && board[boatX, boatY + j] == '#'))
+                        {
+                            valid = false;
+                        }
+                    }
+                }
+                for (int j = 0; j < boatLength; j++)
+                {
+                    if (boatR) { board[boatX + j, boatY] = '#'; }
+                    else if (!boatR) { board[boatX, boatY + j] = '#'; }
                 }
 
             }
