@@ -4,12 +4,17 @@ namespace BattleBoatsProject
 {
     class BattleBoatsProject
     {
-        static int[] boatLengths = { 1, 1, 2, 2, 3 };
+        static int[] boatLengths = { 2, 2, 3, 4 };
 
         static int BoardSize = 8;
 
         static void Main(string[] args)
         {
+            Renderer.Intro();
+
+            Console.ReadLine();
+            return;
+
             //create a new array to store the players boatrs and fill it with -
             char[,] playerBoatsArray = NewArray();
 
@@ -46,8 +51,27 @@ namespace BattleBoatsProject
             {
                 ComputerTurn.Turn(computerShotsArray, playerBoatsArray, ref compSearching, ref compLastShot, ref compDirection);
 
-                createPlayView(playerBoatsArray, computerShotsArray);
-                Console.ReadLine();
+                createDebugView(playerBoatsArray, playerShotsArray, computerBoatsArray, computerShotsArray);
+
+                winner = CheckWin(computerShotsArray);
+                if (winner)
+                {
+                    Console.Clear();
+                    Console.WriteLine("The computer wins :(");
+                    Console.ReadLine();
+                    return;
+                }
+
+                PlayerTurn(playerShotsArray, computerBoatsArray, playerBoatsArray, computerShotsArray);
+
+                winner = CheckWin(playerShotsArray);
+                if (winner)
+                {
+                    Console.Clear();
+                    Console.WriteLine("You win! :)");
+                    Console.ReadLine();
+                    return;
+                }
             }
 
             Console.ReadLine();
@@ -134,9 +158,9 @@ namespace BattleBoatsProject
                     else if (key == ConsoleKey.DownArrow) { tempboatY++; }
 
                     //check that the placement isnt out of bounds
-                    if (tempboatX >= 0 && tempboatR && tempboatX + boatLength <= 8) { boatX = tempboatX; }
+                    if (tempboatX >= 0 && tempboatR && tempboatX + boatLength <= BoardSize) { boatX = tempboatX; }
                     else if (tempboatX >= 0 && !tempboatR && tempboatX <= 7) { boatX = tempboatX; }
-                    if (tempboatY >= 0 && !tempboatR && tempboatY + boatLength <= 8) { boatY = tempboatY; }
+                    if (tempboatY >= 0 && !tempboatR && tempboatY + boatLength <= BoardSize) { boatY = tempboatY; }
                     else if (tempboatY >= 0 && tempboatR && tempboatY <= 7) { boatY = tempboatY; }
 
                     if (!boatR && boatX < 9 - boatLength) { boatR = tempboatR; }
@@ -197,13 +221,13 @@ namespace BattleBoatsProject
                     boatR = ((int)random.Next(0, 2)) == 0;
                     if (boatR)
                     {
-                        boatX = random.Next(0, 8 - boatLength);
+                        boatX = random.Next(0, BoardSize - boatLength);
                         boatY = random.Next(0, 7);
                     }
                     else
                     {
                         boatX = random.Next(0, 7);
-                        boatY = random.Next(0, 8 - boatLength);
+                        boatY = random.Next(0, BoardSize - boatLength);
                     }
 
                     valid = true;
@@ -347,10 +371,10 @@ namespace BattleBoatsProject
                     //if there is a hit boat
                     if (boatsBoard[X, Y] == '*')
                     {
-                        //place a yellow +
+                        //place a red *
                         Console.SetCursorPosition(X + 6, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.Write("+");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("*");
                         Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
@@ -484,187 +508,114 @@ namespace BattleBoatsProject
             else { return false; }
         }
 
-        /*static void ComputerTurn(char[,] shotsArray, char[,] boatsArray)
-        {
-            bool searching = false;
-            int direction = 0;
-            int[] lastShot = new int[2];
-
-            while (true)
-            {
-                Random random = new Random();
-                createPlayView(boatsArray, shotsArray);
-
-                int shotX = 0;
-                int shotY = 0;
-                bool shoot = false;
-
-                if (false)
-                {
-                    if (direction == 0)
-                    {
-                        while (!shoot)
-                        {
-                            direction++;
-
-                            if (direction == 1) { shotX = lastShot[0]; shotY = lastShot[1] + 1; }
-                            if (direction == 2) { shotX = lastShot[0] + 1; shotY = lastShot[1]; }
-                            if (direction == 3) { shotX = lastShot[0]; shotY = lastShot[1] - 1; }
-                            if (direction == 4) { shotX = lastShot[0] - 1; shotY = lastShot[1]; }
-                            if (direction == 5)
-                            {
-                                direction = 0;
-                                searching = false;
-
-                                do
-                                {
-                                    shotX = random.Next(0, 8);
-                                    shotY = random.Next(0, 8);
-
-                                    if (shotsArray[shotX, shotY] != '-') { shoot = false; }
-
-                                } while (!shoot);
-
-                                if (boatsArray[shotX, shotY] == '#')
-                                {
-                                    shotsArray[shotX, shotY] = '*';
-                                    searching = true;
-                                    lastShot = new int[] { shotX, shotY };
-                                }
-                                else
-                                {
-                                    shotsArray[shotX, shotY] = '~';
-                                }
-
-                            }
-
-                            if (shotX < 0 || shotX > 7 || shotY < 0 || shotY > 7) { continue; }
-
-                            if (shotsArray[shotX, shotY] != '-') { continue; }
-
-                            shoot = true;
-                        }
-
-                        lastShot = new int[] { shotX, shotY };
-                        if (boatsArray[shotX, shotY] == '-') { shotsArray[shotX, shotY] = '~'; direction = 0; }
-                        else if (boatsArray[shotX, shotY] == '#')
-                        {
-                            shotsArray[shotX, shotY] = '*';
-                        }
-                    }
-                    else
-                    {
-                        int counter = 0;
-
-                        int ends = 0;
-
-                        while (!shoot)
-                        {
-                            if (ends >= 2)
-                            {
-                                direction = 0;
-                                searching = false;
-
-                                do
-                                {
-                                    shotX = random.Next(0, 8);
-                                    shotY = random.Next(0, 8);
-
-                                    if (shotsArray[shotX, shotY] != '-') { shoot = false; }
-
-                                } while (!shoot);
-
-                                if (boatsArray[shotX, shotY] == '#')
-                                {
-                                    shotsArray[shotX, shotY] = '*';
-                                    searching = true;
-                                    lastShot = new int[] { shotX, shotY };
-                                }
-                                else
-                                {
-                                    shotsArray[shotX, shotY] = '~';
-                                }
-                            }
-
-                            counter++;
-
-                            if (direction == 1) { shotX = lastShot[0]; shotY = lastShot[1] + counter; }
-                            if (direction == 2) { shotX = lastShot[0] + counter; shotY = lastShot[1]; }
-                            if (direction == 3) { shotX = lastShot[0]; shotY = lastShot[1] - counter; }
-                            if (direction == 4) { shotX = lastShot[0] - counter; shotY = lastShot[1]; }
-
-                            if (shotsArray[shotX, shotY] == '~') { ends++; continue; }
-
-                            if (shotsArray[shotX, shotY] != '-') { continue; }
-
-                            if (shotX < 0 || shotX > 7 || shotY < 0 || shotY > 7)
-                            {
-                                if (direction <= 2) { direction += 2; }
-                                if (direction >= 3) { direction -= 2; }
-                                ends++;
-                                continue;
-                            }
-
-                        }
-                    }
-                }
-                else
-                {
-                    do
-                    {
-                        shotX = random.Next(0, 8);
-                        shotY = random.Next(0, 8);
-
-                        if (shotsArray[shotX, shotY] != '-') { shoot = false; }
-
-                    } while (!shoot);
-
-                    if (boatsArray[shotX, shotY] == '#')
-                    {
-                        shotsArray[shotX, shotY] = '*';
-                        searching = true;
-                        lastShot = new int[] { shotX, shotY };
-                    }
-                    else
-                    {
-                        shotsArray[shotX, shotY] = '~';
-                    }
-
-                }
-
-                Console.ReadLine();
-            }
-        }*/
     }
 
+    //contains the algorithm for the computers turns
     class ComputerTurn
     {
+        static int BoardSize = 8;
         public static void Turn(char[,] shotsBoard, char[,] boatsBoard, ref bool searching, ref int[] lastShot, ref int direction)
         {
+            //if the algorithm currently is tracking a boat
             if (searching)
             {
-                searching = false;
+                //if the location is below 0 it is still searching for the location
+                if (direction <= 0 && direction > -5)
+                {
+                    int[] shot = new int[2];
+
+                    bool valid = false;
+                    //get the next valid shot working anticlockwise round the current boat
+                    do
+                    {
+                        direction--;
+                        shot = DirectionToCoord(lastShot, direction * -1);
+
+                        valid = validShot(shotsBoard, shot[0], shot[1]) != 1;
+                    }
+                    while (valid && direction != -5);
+
+                    //if all directions have been tested and there is no boat, take a random shot
+                    if (direction == -5)
+                    {
+                        randomShot(shotsBoard, boatsBoard, ref searching, ref lastShot);
+                        direction = 0;
+                        return;
+                    }
+
+                    //check if the shot hits and mark the arrays appropriately
+                    else if (checkHit(boatsBoard, shot[0], shot[1]))
+                    {
+                        direction = direction * -1;
+                        shotsBoard[shot[0], shot[1]] = '*';
+                        boatsBoard[shot[0], shot[1]] = '*';
+                        lastShot = shot;
+                    }
+                    else
+                    {
+                        shotsBoard[shot[0], shot[1]] = '~';
+                    }
+                }
+                //if the direction of the boat is known
+                else
+                {
+                    bool flipped = false;
+                    bool foundShot = false;
+                    //move in the direction
+                    int[] shot = DirectionToCoord(lastShot, direction);
+
+                    while (!foundShot)
+                    {
+                        //if there is an already shot boat in the way, skip over it
+                        if (validShot(shotsBoard, shot[0], shot[1]) == 3)
+                        {
+                            shot = DirectionToCoord(shot, direction);
+                            continue;
+                        }
+                        //if the shot is not valid for any other reason, the end of the boat has been reached to head in the opposite direction
+                        else if (validShot(shotsBoard, shot[0], shot[1]) != 1 && !flipped)
+                        {
+                            //makes it only go back and forth once to prevent infinite loop
+                            flipped = true;
+
+                            if (direction < 3) { direction += 2; }
+                            else if (direction > 2) { direction -= 2; }
+
+                            shot = DirectionToCoord(shot, direction);
+                            continue;
+                        }
+                        //if its a valid shot take the shot and mark boards appropriately with hit or miss
+                        else if (validShot(shotsBoard, shot[0], shot[1]) == 1)
+                        {
+                            foundShot = true;
+                            if (checkHit(boatsBoard, shot[0], shot[1]))
+                            {
+                                shotsBoard[shot[0], shot[1]] = '*';
+                                boatsBoard[shot[0], shot[1]] = '*';
+                            }
+                            else
+                            {
+                                shotsBoard[shot[0], shot[1]] = '~';
+                            }
+                        }
+                        //if none of these work (it you have flipped and there is no valid shot) take a random shot
+                        else
+                        {
+                            randomShot(shotsBoard, boatsBoard, ref searching, ref lastShot);
+                            direction = 0;
+                            searching = false;
+                            return;
+                        }
+                    }
+                }
             }
             else
             {
-                int[] shot = randomShot(shotsBoard);
-
-                if (checkHit(boatsBoard, shot[0], shot[1]))
-                {
-                    shotsBoard[shot[0], shot[1]] = '*';
-                    boatsBoard[shot[0], shot[1]] = '*';
-                    System.Console.WriteLine("ih");
-
-                    searching = true;
-                    lastShot = shot;
-                }
-                else
-                {
-                    shotsBoard[shot[0], shot[1]] = '~';
-                    System.Console.WriteLine("hi");
-                }
+                //if the algorithm is not tracking a boat shoot randomly
+                randomShot(shotsBoard, boatsBoard, ref searching, ref lastShot);
             }
         }
+
 
         //checks if the shot is a hit or not
         static bool checkHit(char[,] boatsBoard, int X, int Y)
@@ -689,8 +640,8 @@ namespace BattleBoatsProject
             else { return -1; }
         }
 
-        //generates a valid random shot to take
-        static int[] randomShot(char[,] shotsBoard)
+        //generates and takes a valid random shot
+        static void randomShot(char[,] shotsBoard, char[,] boatsBoard, ref bool searching, ref int[] lastShot)
         {
             Random random = new Random();
 
@@ -699,14 +650,27 @@ namespace BattleBoatsProject
 
             do
             {
-                X = random.Next(0, 8);
-                Y = random.Next(0, 8);
+                X = random.Next(0, BoardSize);
+                Y = random.Next(0, BoardSize);
             }
             while (validShot(shotsBoard, X, Y) != 1);
 
-            return new int[] { X, Y };
+            if (checkHit(boatsBoard, X, Y))
+            {
+                shotsBoard[X, Y] = '*';
+                boatsBoard[X, Y] = '*';
+
+                searching = true;
+            }
+            else
+            {
+                shotsBoard[X, Y] = '~';
+            }
+
+            lastShot = new int[] { X, Y };
         }
 
+        //generates new coordinates from old coordinates and a direction
         static int[] DirectionToCoord(int[] lastShot, int direction)
         {
             if (direction == 1) { return new int[] { lastShot[0] + 1, lastShot[1] }; }
@@ -714,6 +678,24 @@ namespace BattleBoatsProject
             else if (direction == 3) { return new int[] { lastShot[0] - 1, lastShot[1] }; }
             else if (direction == 4) { return new int[] { lastShot[0], lastShot[1] - 1 }; }
             else { return new int[] { -1, -1 }; }
+        }
+    }
+
+    class Renderer
+    {
+        public static void Intro()
+        {
+            StreamReader sr = new StreamReader("Background.txt");
+            string line = "";
+            while ((line = sr.ReadLine()) != null)
+            {
+                string[] pixels = line.Split('{');
+
+                foreach (string pixel in pixels)
+                {
+                    Console.WriteLine(pixel);
+                }
+            }
         }
     }
 }
