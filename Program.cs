@@ -2,18 +2,31 @@
 
 namespace BattleBoatsProject
 {
-    class BattleBoatsProject
+    class BattleBoatsProjec
     {
-        static int[] boatLengths = { 2, 2, 3, 4 };
 
         static int BoardSize = 8;
+        static int[] boatLengths = { 2, 2, 3, 4 };
+
 
         static void Main(string[] args)
         {
-            Renderer.Intro();
+
+            int[,,][] renderBoard = new int[36, 64, 4][];
+
+            Renderer.intro(renderBoard);
 
             Console.ReadLine();
             return;
+
+            Game currentGame = new Game();
+
+            return;
+
+
+
+            Console.WriteLine("Put the console into full screen then hit Enter");
+            Console.ReadLine();
 
             //create a new array to store the players boatrs and fill it with -
             char[,] playerBoatsArray = NewArray();
@@ -683,19 +696,117 @@ namespace BattleBoatsProject
 
     class Renderer
     {
-        public static void Intro()
+        static void Render(int[,,][] renderBoard)
         {
-            StreamReader sr = new StreamReader("Background.txt");
-            string line = "";
-            while ((line = sr.ReadLine()) != null)
-            {
-                string[] pixels = line.Split('{');
+            Console.Clear();
 
-                foreach (string pixel in pixels)
+            int layers = renderBoard.GetLength(2);
+            int width = renderBoard.GetLength(1);
+            int height = renderBoard.GetLength(0);
+
+            int[,][] flatBoard = new int[height, width][];
+
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
                 {
-                    Console.WriteLine(pixel);
+                    int layer = 0;
+                    for (int k = 0; k < layers; k++)
+                    {
+                        if (renderBoard[i, j, k] != null) { layer = k; }
+                    }
+                    flatBoard[i, j] = renderBoard[i, j, layer];
+                    //Console.Write("\x1b[48;2;" + pixel[0] + ";" + pixel[1] + ";" + pixel[2] + "m  \u001b[0m");
                 }
             }
+
+            if (height % 2 == 1) { Console.WriteLine("screen must be an even number of pixels high"); return; }
+
+            for (int i = 0; i < height; i += 2)
+            {
+                for (int j = 0; j < width; j++)
+                {
+
+                    int[] topPixel = flatBoard[i, j];
+                    int[] bottomPixel = flatBoard[i + 1, j];
+                    Console.Write("\x1b[48;2;" + topPixel[0] + ";" + topPixel[1] + ";" + topPixel[2] + "m" + "\x1b[38;2;" + bottomPixel[0] + ";" + bottomPixel[1] + ";" + bottomPixel[2] + "m▄\u001b[0m");
+                }
+                Console.WriteLine();
+            }
+
+        }
+        static int[,][] LoadObject(string Filename)
+        {
+            BinaryReader Br = new BinaryReader(File.Open(Filename, FileMode.Open));
+
+            int imgWidth = Br.ReadInt32();
+            int imgHeight = Br.ReadInt32();
+
+            int[,][] ObjectArray = new int[imgWidth, imgHeight][];
+
+            for (int i = 0; i < imgWidth; i++)
+            {
+                for (int j = 0; j < imgHeight; j++)
+                {
+                    byte R = Br.ReadByte();
+                    byte G = Br.ReadByte();
+                    byte B = Br.ReadByte();
+                    ObjectArray[i, j] = new int[3] { R, G, B };
+                }
+            }
+            Br.Close();
+
+            return ObjectArray;
+        }
+        static void PlaceObject(int[,][] Object, int[,,][] renderBoard, int X, int Y, int Layer)
+        {
+            int width = Object.GetLength(1);
+            int height = Object.GetLength(0);
+
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    renderBoard[i + Y, j + X, Layer] = Object[i, j];
+                }
+            }
+
+        }
+
+        public static void intro(int[,,][] renderBoard)
+        {
+            Console.WriteLine("make the console full screen then hit Enter");
+            Console.ReadLine();
+
+            int[,][] background = LoadObject("Background.bin");
+            PlaceObject(background, renderBoard, 0, 0, 0);
+
+            Render(renderBoard);
         }
     }
+
+    //create a struct to store the games state
+    struct Game
+    {
+        static int BoardSize = 8;
+        public char[,] PlayerBoats = new char[BoardSize, BoardSize];
+        public char[,] PlayerShots = new char[BoardSize, BoardSize];
+        public char[,] ComputerBoats = new char[BoardSize, BoardSize];
+        public char[,] ComputerShots = new char[BoardSize, BoardSize];
+        public bool compSearching = false;
+        public int[] compLastShot = new int[2] { -1, -1 };
+        public int compDirection = 0;
+
+        public string fileName = "newGame.bin";
+
+        public Game() { }
+    }
 }
+
+// \x18[#C;1m
+
+// ~ means missed shot
+// * means hit shot
+// - means blank
+// # means unhit boat
+// @ means hit boat
