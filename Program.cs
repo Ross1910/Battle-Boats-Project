@@ -2,7 +2,7 @@
 
 namespace BattleBoatsProject
 {
-    class BattleBoatsProjec
+    class BattleBoatsProject
     {
 
         static int BoardSize = 8;
@@ -12,21 +12,25 @@ namespace BattleBoatsProject
         static void Main(string[] args)
         {
 
-            int[,,][] renderBoard = new int[36, 64, 4][];
+            int[,,][] renderBoard = new int[64, 80, 4][];
 
             Renderer.intro(renderBoard);
 
             Console.ReadLine();
+
+            int choice = Menu(renderBoard);
+
+            if (choice == 0) { NewGame(renderBoard); }
+            if (choice == 1) { ResumeGame(); }
+            if (choice == 2) { Instructions(); }
+            if (choice == 3) { Quit(); return; }
+
+
             return;
 
             Game currentGame = new Game();
 
             return;
-
-
-
-            Console.WriteLine("Put the console into full screen then hit Enter");
-            Console.ReadLine();
 
             //create a new array to store the players boatrs and fill it with -
             char[,] playerBoatsArray = NewArray();
@@ -90,20 +94,59 @@ namespace BattleBoatsProject
             Console.ReadLine();
         }
 
-        static char[,] NewArray()
+
+        static int Menu(int[,,][] renderBoard)
         {
-            char[,] returnArray = new char[BoardSize, BoardSize];
+            Renderer.menuInit(renderBoard);
+
+            int selection = 0;
+            Renderer.menuOption(renderBoard, selection);
+
+            ConsoleKey key = new ConsoleKey();
+
+            while ((key = Console.ReadKey().Key) != ConsoleKey.Enter)
+            {
+                if (key == ConsoleKey.UpArrow && selection > 0)
+                {
+                    selection--;
+                }
+                if (key == ConsoleKey.DownArrow && selection < 3)
+                {
+                    selection++;
+                }
+                Renderer.menuOption(renderBoard, selection);
+                System.Console.WriteLine(selection);
+            }
+
+            return selection;
+        }
+        static void NewGame(int[,,][] renderBoard)
+        {
+            Game newGame = new Game(8);
+
+
+        }
+        static void ResumeGame() { }
+        static void PlayGame() { }
+        static void Instructions() { }
+        static void Quit()
+        {
+            Console.Clear();
+            System.Environment.Exit(1);
+        }
+        static char[,] NewArray(int Size, char Symbol)
+        {
+            char[,] returnArray = new char[Size, Size];
             for (int i = 0; i < returnArray.GetLength(0); i++)
             {
                 for (int j = 0; j < returnArray.GetLength(1); j++)
                 {
-                    returnArray[j, i] = '-';
+                    returnArray[j, i] = Symbol;
                 }
             }
 
             return returnArray;
         }
-
         static void CreatePlacementView(char[,] board)
         {
             Console.Clear();
@@ -139,7 +182,6 @@ namespace BattleBoatsProject
                 }
             }
         }
-
         static char[,] PlayerBoatsPlacement(char[,] board)
         {
             //loops through each boat
@@ -215,7 +257,6 @@ namespace BattleBoatsProject
             }
             return board;
         }
-
         static char[,] GenerateBoats(char[,] board)
         {
             Random random = new Random();
@@ -261,7 +302,6 @@ namespace BattleBoatsProject
             }
             return board;
         }
-
         static void createPlayView(char[,] boatsBoard, char[,] shotsBoard)
         {
             Console.Clear();
@@ -333,7 +373,6 @@ namespace BattleBoatsProject
                 }
             }
         }
-
         static void createDebugView(char[,] boatsBoard, char[,] shotsBoard, char[,] compBoatsBoard, char[,] compShotsBoard)
         {
             Console.Clear();
@@ -473,7 +512,6 @@ namespace BattleBoatsProject
                 }
             }
         }
-
         static void PlayerTurn(char[,] shotsArray, char[,] boatsArray, /*just here for rendering*/ char[,] playerBoatsArray, char[,] computerShotsArray)
         {
             ConsoleKey key = new ConsoleKey();
@@ -498,7 +536,6 @@ namespace BattleBoatsProject
             if (boatsArray[shotX, shotY] == '#') { shotsArray[shotX, shotY] = '*'; }
             else { shotsArray[shotX, shotY] = '~'; }
         }
-
         static bool CheckWin(char[,] shotsArray)
         {
             int hitcount = 0;
@@ -520,7 +557,6 @@ namespace BattleBoatsProject
             if (hitcount >= hitTarget) { return true; }
             else { return false; }
         }
-
     }
 
     //contains the algorithm for the computers turns
@@ -698,8 +734,6 @@ namespace BattleBoatsProject
     {
         static void Render(int[,,][] renderBoard)
         {
-            Console.Clear();
-
             int layers = renderBoard.GetLength(2);
             int width = renderBoard.GetLength(1);
             int height = renderBoard.GetLength(0);
@@ -713,15 +747,21 @@ namespace BattleBoatsProject
                     int layer = 0;
                     for (int k = 0; k < layers; k++)
                     {
-                        if (renderBoard[i, j, k] != null) { layer = k; }
+                        if (renderBoard[i, j, k] != null && renderBoard[i, j, k][3] != 0)
+                        {
+                            layer = k;
+                        }
                     }
                     flatBoard[i, j] = renderBoard[i, j, layer];
+                    //System.Console.WriteLine(layer);
+                    //Console.ReadLine();
                     //Console.Write("\x1b[48;2;" + pixel[0] + ";" + pixel[1] + ";" + pixel[2] + "m  \u001b[0m");
                 }
             }
 
             if (height % 2 == 1) { Console.WriteLine("screen must be an even number of pixels high"); return; }
 
+            string output = "";
             for (int i = 0; i < height; i += 2)
             {
                 for (int j = 0; j < width; j++)
@@ -729,15 +769,17 @@ namespace BattleBoatsProject
 
                     int[] topPixel = flatBoard[i, j];
                     int[] bottomPixel = flatBoard[i + 1, j];
-                    Console.Write("\x1b[48;2;" + topPixel[0] + ";" + topPixel[1] + ";" + topPixel[2] + "m" + "\x1b[38;2;" + bottomPixel[0] + ";" + bottomPixel[1] + ";" + bottomPixel[2] + "m▄\u001b[0m");
+                    output += ("\x1b[48;2;" + topPixel[0] + ";" + topPixel[1] + ";" + topPixel[2] + "m" + "\x1b[38;2;" + bottomPixel[0] + ";" + bottomPixel[1] + ";" + bottomPixel[2] + "m▄\u001b[0m");
                 }
-                Console.WriteLine();
+                output += "\n";
             }
+            Console.Clear();
+            Console.WriteLine(output);
 
         }
         static int[,][] LoadObject(string Filename)
         {
-            BinaryReader Br = new BinaryReader(File.Open(Filename, FileMode.Open));
+            BinaryReader Br = new BinaryReader(File.Open(("Assets/" + Filename), FileMode.Open));
 
             int imgWidth = Br.ReadInt32();
             int imgHeight = Br.ReadInt32();
@@ -751,7 +793,8 @@ namespace BattleBoatsProject
                     byte R = Br.ReadByte();
                     byte G = Br.ReadByte();
                     byte B = Br.ReadByte();
-                    ObjectArray[i, j] = new int[3] { R, G, B };
+                    byte A = Br.ReadByte();
+                    ObjectArray[i, j] = new int[] { R, G, B, A };
                 }
             }
             Br.Close();
@@ -767,12 +810,28 @@ namespace BattleBoatsProject
             {
                 for (int j = 0; j < width; j++)
                 {
+                    if (i + Y > renderBoard.GetLength(0) || j + X > renderBoard.GetLength(1)) { continue; }
                     renderBoard[i + Y, j + X, Layer] = Object[i, j];
                 }
             }
 
         }
-
+        static void ClearLayer(int[,,][] renderBoard, int layer)
+        {
+            for (int i = 0; i < renderBoard.GetLength(0); i++)
+            {
+                for (int j = 0; j < renderBoard.GetLength(1); j++)
+                {
+                    renderBoard[i, j, layer] = new int[] { 0, 0, 0, 0 };
+                }
+            }
+        }
+        static void ClearAllObj(int[,,][] renderBoard)
+        {
+            ClearLayer(renderBoard, 1);
+            ClearLayer(renderBoard, 2);
+            ClearLayer(renderBoard, 3);
+        }
         public static void intro(int[,,][] renderBoard)
         {
             Console.WriteLine("make the console full screen then hit Enter");
@@ -780,6 +839,43 @@ namespace BattleBoatsProject
 
             int[,][] background = LoadObject("Background.bin");
             PlaceObject(background, renderBoard, 0, 0, 0);
+            Render(renderBoard);
+
+            Console.WriteLine("if the image takes up the whole console try zooming out");
+            Console.ReadLine();
+
+            int[,][] title = LoadObject("Title.bin");
+            PlaceObject(title, renderBoard, 12, 12, 2);
+
+
+            int[,][] titleBorder = LoadObject("TitleBorder.bin");
+            PlaceObject(titleBorder, renderBoard, 9, 9, 1);
+
+            Render(renderBoard);
+        }
+        public static void menuInit(int[,,][] renderBoard)
+        {
+            ClearAllObj(renderBoard);
+            PlaceObject(LoadObject("menu.bin"), renderBoard, 9, 12, 1);
+
+            Render(renderBoard);
+        }
+        public static void menuOption(int[,,][] renderBoard, int selection)
+        {
+            ClearLayer(renderBoard, 2);
+
+            if (selection == 0) { PlaceObject(LoadObject("menu newgame.bin"), renderBoard, 12, 15, 2); ; }
+            if (selection == 1) { PlaceObject(LoadObject("menu resumegame.bin"), renderBoard, 12, 21, 2); }
+            if (selection == 2) { PlaceObject(LoadObject("menu instructions.bin"), renderBoard, 12, 27, 2); }
+            if (selection == 3) { PlaceObject(LoadObject("menu quit.bin"), renderBoard, 12, 33, 2); }
+
+            Render(renderBoard);
+        }
+        public static void splashText(int[,,][] renderBoard, string file, int X, int Y)
+        {
+            ClearLayer(renderBoard, 3);
+
+            PlaceObject(LoadObject(file), renderBoard, X, Y, 3);
 
             Render(renderBoard);
         }
@@ -788,18 +884,23 @@ namespace BattleBoatsProject
     //create a struct to store the games state
     struct Game
     {
-        static int BoardSize = 8;
-        public char[,] PlayerBoats = new char[BoardSize, BoardSize];
-        public char[,] PlayerShots = new char[BoardSize, BoardSize];
-        public char[,] ComputerBoats = new char[BoardSize, BoardSize];
-        public char[,] ComputerShots = new char[BoardSize, BoardSize];
+        public char[,] PlayerBoats;
+        public char[,] PlayerShots;
+        public char[,] ComputerBoats;
+        public char[,] ComputerShots;
         public bool compSearching = false;
         public int[] compLastShot = new int[2] { -1, -1 };
         public int compDirection = 0;
-
+        public bool PlayerTurn = true;
         public string fileName = "newGame.bin";
 
-        public Game() { }
+        public Game(int BoardSize)
+        {
+            PlayerBoats = new char[BoardSize, BoardSize];
+            PlayerShots = new char[BoardSize, BoardSize];
+            ComputerBoats = new char[BoardSize, BoardSize];
+            ComputerShots = new char[BoardSize, BoardSize];
+        }
     }
 }
 
