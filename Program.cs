@@ -21,14 +21,14 @@ namespace BattleBoatsProject
             int choice = Menu(renderBoard);
 
             if (choice == 0) { NewGame(renderBoard); }
-            if (choice == 1) { ResumeGame(); }
-            if (choice == 2) { Instructions(); }
-            if (choice == 3) { Quit(); return; }
+            else if (choice == 1) { ResumeGame(); }
+            else if (choice == 2) { Instructions(); }
+            else if (choice == 3) { Quit(); return; }
 
 
             return;
 
-            Game currentGame = new Game();
+            /*Game currentGame = new Game();
 
             return;
 
@@ -91,7 +91,7 @@ namespace BattleBoatsProject
                 }
             }
 
-            Console.ReadLine();
+            Console.ReadLine();*/
         }
 
 
@@ -118,12 +118,23 @@ namespace BattleBoatsProject
                 System.Console.WriteLine(selection);
             }
 
+            Renderer.MenuClose(renderBoard);
+
             return selection;
         }
         static void NewGame(int[,,][] renderBoard)
         {
             Game newGame = new Game(8);
 
+            Renderer.splashText(renderBoard, "NameInput.bin", 17, 15);
+
+            newGame.fileName = Renderer.textInput(21, 16, 36);
+
+            Console.Clear();
+
+            Console.WriteLine(newGame.fileName);
+
+            Console.ReadLine();
 
         }
         static void ResumeGame() { }
@@ -871,6 +882,10 @@ namespace BattleBoatsProject
 
             Render(renderBoard);
         }
+        public static void MenuClose(int[,,][] renderBoard)
+        {
+            ClearAllObj(renderBoard);
+        }
         public static void splashText(int[,,][] renderBoard, string file, int X, int Y)
         {
             ClearLayer(renderBoard, 3);
@@ -879,6 +894,38 @@ namespace BattleBoatsProject
 
             Render(renderBoard);
         }
+        public static string textInput(int X, int Y, int maxLength = -1)
+        {
+            Console.SetCursorPosition(X, Y);
+
+            int[] background = new int[] { 170, 170, 170 };
+            int[] foreground = new int[] { 68, 73, 84 };
+            Console.Write("\x1b[48;2;" + background[0] + ";" + background[1] + ";" + background[2] + "m" + "\x1b[38;2;" + foreground[0] + ";" + foreground[1] + ";" + foreground[2] + "m");
+
+            int length = 0;
+            string output = "";
+
+            ConsoleKeyInfo key = new ConsoleKeyInfo();
+
+            while ((key = Console.ReadKey()).Key != ConsoleKey.Enter)
+            {
+                length++;
+
+                if (length > maxLength && maxLength != -1)
+                {
+                    Console.Write("\b \b");
+                }
+                else
+                {
+                    output += key.KeyChar;
+                }
+            }
+
+            Console.Write("\u001b[0m");
+
+            return output;
+        }
+
     }
 
     //create a struct to store the games state
@@ -904,10 +951,10 @@ namespace BattleBoatsProject
     }
 }
 
+
 // \x18[#C;1m
 
 // ~ means missed shot
 // * means hit shot
 // - means blank
 // # means unhit boat
-// @ means hit boat
