@@ -7,6 +7,7 @@ namespace BattleBoatsProject
 
         static int BoardSize = 8;
         static int[] boatLengths = { 2, 2, 3, 4 };
+        static string alphabet = "abcdefghijklmnopqrstuvwxyz";
 
 
         static void Main(string[] args)
@@ -17,81 +18,18 @@ namespace BattleBoatsProject
             Renderer.intro(renderBoard);
 
             Console.ReadLine();
+            int choice = 0;
 
-            int choice = Menu(renderBoard);
-
-            if (choice == 0) { NewGame(renderBoard); }
-            else if (choice == 1) { ResumeGame(); }
-            else if (choice == 2) { Instructions(); }
-            else if (choice == 3) { Quit(); return; }
-
-
-            return;
-
-            /*Game currentGame = new Game();
-
-            return;
-
-            //create a new array to store the players boatrs and fill it with -
-            char[,] playerBoatsArray = NewArray();
-
-            //get the player to place the boats
-            playerBoatsArray = PlayerBoatsPlacement(playerBoatsArray);
-
-            //create a new array to store the computers boats
-            char[,] computerBoatsArray = NewArray();
-
-            //generate the computers boats
-            computerBoatsArray = GenerateBoats(computerBoatsArray);
-
-            //display for debug purposes
-            //CreatePlacementView(computerBoatsArray);
-            //Console.ReadLine();
-
-            //create arrays to store each players shots
-            char[,] playerShotsArray = NewArray();
-            char[,] computerShotsArray = NewArray();
-
-            //show the game board
-            createDebugView(playerBoatsArray, playerShotsArray, computerBoatsArray, computerShotsArray);
-
-            //declare a boolean to check if the game is over
-            bool winner = false;
-
-            //variables for the computer to decide its moves
-            bool compSearching = false;
-            int[] compLastShot = new int[2] { -1, -1 };
-            int compDirection = 0;
-
-
-            while (!winner)
+            while (choice != 4)
             {
-                ComputerTurn.Turn(computerShotsArray, playerBoatsArray, ref compSearching, ref compLastShot, ref compDirection);
+                choice = Menu(renderBoard);
 
-                createDebugView(playerBoatsArray, playerShotsArray, computerBoatsArray, computerShotsArray);
-
-                winner = CheckWin(computerShotsArray);
-                if (winner)
-                {
-                    Console.Clear();
-                    Console.WriteLine("The computer wins :(");
-                    Console.ReadLine();
-                    return;
-                }
-
-                PlayerTurn(playerShotsArray, computerBoatsArray, playerBoatsArray, computerShotsArray);
-
-                winner = CheckWin(playerShotsArray);
-                if (winner)
-                {
-                    Console.Clear();
-                    Console.WriteLine("You win! :)");
-                    Console.ReadLine();
-                    return;
-                }
+                if (choice == 0) { NewGame(renderBoard); }
+                else if (choice == 1) { ResumeGame(renderBoard); }
+                else if (choice == 2) { Instructions(); }
+                else if (choice == 3) { Quit(); return; }
             }
-
-            Console.ReadLine();*/
+            return;
         }
 
 
@@ -130,146 +68,53 @@ namespace BattleBoatsProject
 
             newGame.fileName = Renderer.textInput(21, 16, 36);
 
-            Console.Clear();
+            Renderer.placeBoatsGrid(renderBoard);
 
-            Console.WriteLine(newGame.fileName);
-
-            Console.ReadLine();
-
-        }
-        static void ResumeGame() { }
-        static void PlayGame() { }
-        static void Instructions() { }
-        static void Quit()
-        {
-            Console.Clear();
-            System.Environment.Exit(1);
-        }
-        static char[,] NewArray(int Size, char Symbol)
-        {
-            char[,] returnArray = new char[Size, Size];
-            for (int i = 0; i < returnArray.GetLength(0); i++)
-            {
-                for (int j = 0; j < returnArray.GetLength(1); j++)
-                {
-                    returnArray[j, i] = Symbol;
-                }
-            }
-
-            return returnArray;
-        }
-        static void CreatePlacementView(char[,] board)
-        {
-            Console.Clear();
-            //outputs the grid
-            Console.WriteLine("╔══════════════════╗");
-            Console.WriteLine("║ place your boats ║");
-            Console.WriteLine("║    ╔════════╗    ║");
-            Console.WriteLine("║    ║++++++++║    ║");
-            Console.WriteLine("║    ║++++++++║    ║");
-            Console.WriteLine("║    ║++++++++║    ║");
-            Console.WriteLine("║    ║++++++++║    ║");
-            Console.WriteLine("║    ║++++++++║    ║");
-            Console.WriteLine("║    ║++++++++║    ║");
-            Console.WriteLine("║    ║++++++++║    ║");
-            Console.WriteLine("║    ║++++++++║    ║");
-            Console.WriteLine("║    ╚════════╝    ║");
-            Console.WriteLine("╚══════════════════╝");
-
-            //loops through the gameboard
-            for (int X = 0; X < board.GetLength(0); X++)
-            {
-                for (int Y = 0; Y < board.GetLength(1); Y++)
-                {
-                    //if there is a boat
-                    if (board[X, Y] == '#')
-                    {
-                        //place a red +
-                        Console.SetCursorPosition(X + 6, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("+");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                }
-            }
-        }
-        static char[,] PlayerBoatsPlacement(char[,] board)
-        {
-            //loops through each boat
             for (int i = 0; i < boatLengths.Length; i++)
             {
-                //output the board
-                CreatePlacementView(board);
-                //gets the boats length
-                int boatLength = boatLengths[i];
-
-                int boatX = 0;
-                int boatY = 0;
-                bool boatR = false;
-                bool overlap = true;
-
-                //loops as long as the enter key isnt pressed
-                ConsoleKey key = new ConsoleKey();
-                while ((key = Console.ReadKey().Key) != ConsoleKey.Enter || overlap == true)
+                bool valid = true;
+                int X = 0;
+                int Y = 0;
+                bool R = false;
+                int length = boatLengths[i];
+                do
                 {
-                    int tempboatX = boatX;
-                    int tempboatY = boatY;
-                    bool tempboatR = boatR;
+                    valid = true;
+                    X = 0;
+                    Y = 0;
+                    R = false;
+                    length = boatLengths[i];
 
-                    //navigate with the arrow keys
-                    if (key == ConsoleKey.R) { tempboatR = !boatR; }
-                    else if (key == ConsoleKey.RightArrow) { tempboatX++; }
-                    else if (key == ConsoleKey.LeftArrow) { tempboatX--; }
-                    else if (key == ConsoleKey.UpArrow) { tempboatY--; }
-                    else if (key == ConsoleKey.DownArrow) { tempboatY++; }
+                    Renderer.boatsPlacementTarget(renderBoard, X, Y, R, length);
 
-                    //check that the placement isnt out of bounds
-                    if (tempboatX >= 0 && tempboatR && tempboatX + boatLength <= BoardSize) { boatX = tempboatX; }
-                    else if (tempboatX >= 0 && !tempboatR && tempboatX <= 7) { boatX = tempboatX; }
-                    if (tempboatY >= 0 && !tempboatR && tempboatY + boatLength <= BoardSize) { boatY = tempboatY; }
-                    else if (tempboatY >= 0 && tempboatR && tempboatY <= 7) { boatY = tempboatY; }
-
-                    if (!boatR && boatX < 9 - boatLength) { boatR = tempboatR; }
-                    else if (boatR && boatY < 9 - boatLength) { boatR = tempboatR; }
-
-                    //check that the placement doesnt overlap with another boat
-                    overlap = false;
-                    for (int j = 0; j < boatLength; j++)
+                    ConsoleKey key = new ConsoleKey();
+                    while ((key = Console.ReadKey().Key) != ConsoleKey.Enter)
                     {
-                        if (boatR) { if (board[boatX + j, boatY] == '#') { overlap = true; } }
-                        else { if (board[boatX, boatY + j] == '#') { overlap = true; } }
+                        if (key == ConsoleKey.UpArrow && Y > 0) { Y--; }
+                        if (key == ConsoleKey.DownArrow && ((R && Y < 7) || (!R && Y + length <= 7))) { Y++; }
+                        if (key == ConsoleKey.LeftArrow && X > 0) { X--; }
+                        if (key == ConsoleKey.RightArrow && ((!R && X < 7) || (R && X + length <= 7))) { X++; }
+                        if (key == ConsoleKey.R && ((R && Y + length <= 8) || (!R && X + length <= 8))) { R = !R; }
+
+                        Renderer.boatsPlacementTarget(renderBoard, X, Y, R, length);
                     }
 
-                    //output the board
-                    CreatePlacementView(board);
-
-                    //draw the current boat position on the board
-                    for (int j = 0; j < boatLength; j++)
+                    for (int j = 0; j < length; j++)
                     {
-                        //place a blue +
-                        if (boatR) { Console.SetCursorPosition(boatX + 6 + j, boatY + 3); }
-                        else { Console.SetCursorPosition(boatX + 6, boatY + 3 + j); }
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.Write("+");
-                        Console.ForegroundColor = ConsoleColor.White;
-
-                        //put the cursor back
-                        Console.SetCursorPosition(0, 12);
+                        if (!R && (newGame.PlayerBoats[X, Y + j] != new char())) { valid = false; };
+                        if (R && (newGame.PlayerBoats[X + j, Y] != new char())) { valid = false; };
                     }
-
                 }
-
-                for (int j = 0; j < boatLength; j++)
+                while (!valid);
+                for (int j = 0; j < length; j++)
                 {
-                    if (boatR) { board[boatX + j, boatY] = '#'; }
-                    else { board[boatX, boatY + j] = '#'; }
+                    if (!R) { newGame.PlayerBoats[X, Y + j] = alphabet[i]; };
+                    if (R) { newGame.PlayerBoats[X + j, Y] = alphabet[i]; };
                 }
-
+                Renderer.placeBoats(renderBoard, newGame.PlayerBoats, 24, 16);
             }
-            return board;
-        }
-        static char[,] GenerateBoats(char[,] board)
-        {
+
+            Console.ReadLine();
             Random random = new Random();
             for (int i = 0; i < boatLengths.Length; i++)
             {
@@ -298,7 +143,7 @@ namespace BattleBoatsProject
                     valid = true;
                     for (int j = 0; j < boatLength; j++)
                     {
-                        if ((boatR && board[boatX + j, boatY] == '#') || (!boatR && board[boatX, boatY + j] == '#'))
+                        if ((boatR && newGame.ComputerBoats[boatX + j, boatY] != new char()) || (!boatR && newGame.ComputerBoats[boatX, boatY + j] != new char()))
                         {
                             valid = false;
                         }
@@ -306,269 +151,208 @@ namespace BattleBoatsProject
                 }
                 for (int j = 0; j < boatLength; j++)
                 {
-                    if (boatR) { board[boatX + j, boatY] = '#'; }
-                    else if (!boatR) { board[boatX, boatY + j] = '#'; }
+                    if (boatR) { newGame.ComputerBoats[boatX + j, boatY] = alphabet[i]; }
+                    else if (!boatR) { newGame.ComputerBoats[boatX, boatY + j] = alphabet[i]; }
                 }
 
             }
-            return board;
+
+
+            Renderer.placeBoats(renderBoard, newGame.ComputerBoats, 24, 16);
+            SaveGame(newGame);
+
+            PlayGame(newGame.fileName, renderBoard);
+
         }
-        static void createPlayView(char[,] boatsBoard, char[,] shotsBoard)
+        static void SaveGame(Game game)
         {
-            Console.Clear();
-            //outputs the grid
-            Console.WriteLine("╔════════════════════════════╗");
-            Console.WriteLine("║    your boats  your shots  ║");
-            Console.WriteLine("║    ╔════════╗  ╔════════╗  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ╚════════╝  ╚════════╝  ║");
-            Console.WriteLine("╚════════════════════════════╝");
-
-            //loops through the boats board to place boats
-            for (int X = 0; X < boatsBoard.GetLength(0); X++)
+            BinaryWriter writer = new BinaryWriter(File.Open(("SavedGames/" + game.fileName + ".BattleBoats"), FileMode.Create));
+            writer.Write(game.BoardSize);
+            for (int i = 0; i < game.BoardSize; i++)
             {
-                for (int Y = 0; Y < boatsBoard.GetLength(1); Y++)
+                for (int j = 0; j < game.BoardSize; j++)
                 {
-                    //if there is a boat
-                    if (boatsBoard[X, Y] == '#')
-                    {
-                        //place a red +
-                        Console.SetCursorPosition(X + 6, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("+");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-
-                    //if there is a hit boat
-                    if (boatsBoard[X, Y] == '*')
-                    {
-                        //place a yellow +
-                        Console.SetCursorPosition(X + 6, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.Write("+");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
+                    writer.Write(game.PlayerBoats[i, j]);
+                    writer.Write(game.PlayerShots[i, j]);
+                    writer.Write(game.ComputerBoats[i, j]);
+                    writer.Write(game.ComputerShots[i, j]);
                 }
             }
+            writer.Write(game.compSearching);
 
-            //loops through the shots board to place shots
-            for (int X = 0; X < shotsBoard.GetLength(0); X++)
+            for (int i = 0; i < 2; i++)
             {
-                for (int Y = 0; Y < shotsBoard.GetLength(1); Y++)
-                {
-                    //if there is a miss
-                    if (shotsBoard[X, Y] == '~')
-                    {
-                        //place a cyan ~ for a miss
-                        Console.SetCursorPosition(X + 18, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write("~");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    //if there is a hit
-                    if (shotsBoard[X, Y] == '*')
-                    {
-                        //place a red # for a hit
-                        Console.SetCursorPosition(X + 18, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("#");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                }
+                writer.Write(game.compLastShot[i]);
             }
+
+            writer.Write(game.compDirection);
+            writer.Write(game.PlayerTurn);
+
+            writer.Close();
         }
-        static void createDebugView(char[,] boatsBoard, char[,] shotsBoard, char[,] compBoatsBoard, char[,] compShotsBoard)
+        static Game LoadGame(string Filename)
         {
-            Console.Clear();
-            //outputs the grid
-            Console.WriteLine("╔════════════════════════════╗");
-            Console.WriteLine("║    your boats  your shots  ║");
-            Console.WriteLine("║    ╔════════╗  ╔════════╗  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ╚════════╝  ╚════════╝  ║");
-            Console.WriteLine("╚════════════════════════════╝");
-            Console.WriteLine("╔════════════════════════════╗");
-            Console.WriteLine("║    comp boats  comp shots  ║");
-            Console.WriteLine("║    ╔════════╗  ╔════════╗  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ║++++++++║  ║++++++++║  ║");
-            Console.WriteLine("║    ╚════════╝  ╚════════╝  ║");
-            Console.WriteLine("╚════════════════════════════╝");
-
-            //loops through the boats board to place boats
-            for (int X = 0; X < boatsBoard.GetLength(0); X++)
+            try
             {
-                for (int Y = 0; Y < boatsBoard.GetLength(1); Y++)
+                BinaryReader reader = new BinaryReader(File.Open(("SavedGames/" + Filename + ".BattleBoats"), FileMode.Open));
+                int boardSize = reader.ReadInt32();
+
+                Game returnGame = new Game(boardSize);
+
+                for (int i = 0; i < BoardSize; i++)
                 {
-                    //if there is a boat
-                    if (boatsBoard[X, Y] == '#')
+                    for (int j = 0; j < BoardSize; j++)
                     {
-                        //place a red +
-                        Console.SetCursorPosition(X + 6, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("+");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-
-
-                    //if there is a hit boat
-                    if (boatsBoard[X, Y] == '*')
-                    {
-                        //place a red *
-                        Console.SetCursorPosition(X + 6, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("*");
-                        Console.ForegroundColor = ConsoleColor.White;
+                        returnGame.PlayerBoats[i, j] = reader.ReadChar();
+                        returnGame.PlayerShots[i, j] = reader.ReadChar();
+                        returnGame.ComputerBoats[i, j] = reader.ReadChar();
+                        returnGame.ComputerShots[i, j] = reader.ReadChar();
                     }
                 }
+
+                returnGame.compSearching = reader.ReadBoolean();
+
+                for (int i = 0; i < 2; i++)
+                {
+                    returnGame.compLastShot[i] = reader.ReadInt32();
+                }
+
+                returnGame.compDirection = reader.ReadInt32();
+                returnGame.PlayerTurn = reader.ReadBoolean();
+
+                returnGame.fileName = Filename;
+
+                reader.Close();
+
+                return returnGame;
+
             }
-
-            //loops through the shots board to place shots
-            for (int X = 0; X < shotsBoard.GetLength(0); X++)
+            catch
             {
-                for (int Y = 0; Y < shotsBoard.GetLength(1); Y++)
-                {
-                    //if there is a miss
-                    if (shotsBoard[X, Y] == '~')
-                    {
-                        //place a cyan ~ for a miss
-                        Console.SetCursorPosition(X + 18, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write("~");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    //if there is a hit
-                    if (shotsBoard[X, Y] == '*')
-                    {
-                        //place a red # for a hit
-                        Console.SetCursorPosition(X + 18, Y + 3);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("#");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                }
-            }
-
-            //loops through the computers boats board to place boats
-            for (int X = 0; X < compBoatsBoard.GetLength(0); X++)
-            {
-                for (int Y = 0; Y < compBoatsBoard.GetLength(1); Y++)
-                {
-                    //if there is a boat
-                    if (compBoatsBoard[X, Y] == '#')
-                    {
-                        //place a red +
-                        Console.SetCursorPosition(X + 6, Y + 16);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("+");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-
-
-                    //if there is a hit boat
-                    if (boatsBoard[X, Y] == '*')
-                    {
-                        //place a yellow +
-                        Console.SetCursorPosition(X + 6, Y + 16);
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.Write("+");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                }
-            }
-
-            //loops through the computers shots board to place shots
-            for (int X = 0; X < compShotsBoard.GetLength(0); X++)
-            {
-                for (int Y = 0; Y < compShotsBoard.GetLength(1); Y++)
-                {
-                    //if there is a miss
-                    if (compShotsBoard[X, Y] == '~')
-                    {
-                        //place a cyan ~ for a miss
-                        Console.SetCursorPosition(X + 18, Y + 16);
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write("~");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    //if there is a hit
-                    if (compShotsBoard[X, Y] == '*')
-                    {
-                        //place a red # for a hit
-                        Console.SetCursorPosition(X + 18, Y + 16);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("#");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                }
+                Console.Clear();
+                Console.WriteLine("File not found");
+                Console.ReadLine();
+                throw;
             }
         }
-        static void PlayerTurn(char[,] shotsArray, char[,] boatsArray, /*just here for rendering*/ char[,] playerBoatsArray, char[,] computerShotsArray)
+        static void ResumeGame(int[,,][] renderBoard)
         {
-            ConsoleKey key = new ConsoleKey();
-            int shotX = 0;
-            int shotY = 0;
 
-            while ((key = Console.ReadKey().Key) != ConsoleKey.Enter)
+            Renderer.splashText(renderBoard, "NameInput.bin", 17, 15);
+
+            string fileName = Renderer.textInput(21, 16, 36);
+
+            try
             {
-                if (key == ConsoleKey.UpArrow && shotY > 0) { shotY--; }
-                if (key == ConsoleKey.DownArrow && shotY < 7) { shotY++; }
-
-                if (key == ConsoleKey.LeftArrow && shotX > 0) { shotX--; }
-                if (key == ConsoleKey.RightArrow && shotX < 7) { shotX++; }
-
-                createDebugView(playerBoatsArray, shotsArray, boatsArray, computerShotsArray);
-                Console.SetCursorPosition(shotX + 18, shotY + 3);
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write('+');
-                Console.ForegroundColor = ConsoleColor.White;
+                LoadGame(fileName);
             }
-
-            if (boatsArray[shotX, shotY] == '#') { shotsArray[shotX, shotY] = '*'; }
-            else { shotsArray[shotX, shotY] = '~'; }
+            catch
+            {
+                return;
+            }
+            PlayGame(fileName, renderBoard);
         }
-        static bool CheckWin(char[,] shotsArray)
+        //loops through the game until it is quit or someone wins
+        static void PlayGame(string Filename, int[,,][] renderBoard)
         {
-            int hitcount = 0;
+            //set the win to false
+            int win = -1;
+            //set up the win condition
             int hitTarget = 0;
-
             for (int i = 0; i < boatLengths.Length; i++)
             {
                 hitTarget += boatLengths[i];
             }
 
-            for (int i = 0; i < shotsArray.GetLength(0); i++)
+            //set up the screen for the default display
+            Renderer.placeBattleGrid(renderBoard);
+
+
+            int X = 0;
+            int Y = 0;
+
+            //loop until someone wins
+            while (win == -1)
             {
-                for (int j = 0; j < shotsArray.GetLength(1); j++)
+                //load the game from a file
+                Game currentGame = LoadGame(Filename);
+
+                //show the players boats
+                Renderer.placeShotsAndBoats(renderBoard, currentGame.PlayerShots, currentGame.PlayerBoats, currentGame.ComputerShots);
+
+                //run the players turn
+                bool validShot = false;
+                Renderer.placeShotsTarget(renderBoard, X, Y);
+                do
                 {
-                    if (shotsArray[i, j] == '*') { hitcount++; }
+                    Renderer.placeShotsTarget(renderBoard, X, Y);
+
+                    ConsoleKey key = new ConsoleKey();
+                    while ((key = Console.ReadKey().Key) != ConsoleKey.Enter)
+                    {
+                        if (key == ConsoleKey.UpArrow && Y > 0) { Y--; }
+                        if (key == ConsoleKey.DownArrow && Y < 7) { Y++; }
+                        if (key == ConsoleKey.LeftArrow && X > 0) { X--; }
+                        if (key == ConsoleKey.RightArrow && X < 7) { X++; }
+                        Renderer.placeShotsTarget(renderBoard, X, Y);
+                    }
+
+                    if (currentGame.PlayerShots[X, Y] == new char()) { validShot = true; }
                 }
+                while (!validShot);
+
+                if (currentGame.ComputerBoats[X, Y] != new char()) { currentGame.PlayerShots[X, Y] = '*'; }
+                else { currentGame.PlayerShots[X, Y] = '~'; }
+
+                //run the computers turn
+                ComputerTurn.Turn(currentGame.ComputerShots, currentGame.PlayerBoats, ref currentGame.compSearching, ref currentGame.compLastShot, ref currentGame.compDirection);
+
+                int playerHits = 0;
+                int computerHits = 0;
+                //check for a win
+                for (int i = 0; i < currentGame.PlayerShots.GetLength(0); i++)
+                {
+                    for (int j = 0; j < currentGame.PlayerShots.GetLength(1); j++)
+                    {
+                        if (currentGame.PlayerShots[i, j] == '*') { playerHits++; }
+                        if (currentGame.ComputerShots[i, j] == '*') { computerHits++; }
+                    }
+                }
+
+                if (playerHits >= hitTarget) { win = 1; }
+                else if (computerHits >= hitTarget) { win = 2; }
+
+
+                //save the game at the end of the turn
+                SaveGame(currentGame);
+
+                //win = 0;
             }
 
-            if (hitcount >= hitTarget) { return true; }
-            else { return false; }
+            if (win == 1)
+            {
+                Console.Clear();
+                Console.WriteLine("Congratulations, you win");
+                Console.ReadLine();
+                return;
+            }
+            else if (win == 2)
+            {
+                Console.Clear();
+                Console.WriteLine("The Computer won :(");
+                Console.ReadLine();
+                return;
+            }
+        }
+        static void Instructions() { }
+        static void Quit()
+        {
+            Console.Clear();
+            System.Environment.Exit(1);
         }
     }
+
+
 
     //contains the algorithm for the computers turns
     class ComputerTurn
@@ -680,7 +464,7 @@ namespace BattleBoatsProject
         //checks if the shot is a hit or not
         static bool checkHit(char[,] boatsBoard, int X, int Y)
         {
-            if (boatsBoard[X, Y] == '#')
+            if (boatsBoard[X, Y] != new char())
             {
                 return true;
             }
@@ -696,7 +480,7 @@ namespace BattleBoatsProject
             if (X > 7 || X < 0 || Y > 7 || Y < 0) { return -1; }
             if (shotsBoard[X, Y] == '~') { return 2; }
             if (shotsBoard[X, Y] == '*') { return 3; }
-            if (shotsBoard[X, Y] == '-') { return 1; }
+            if (shotsBoard[X, Y] == new char()) { return 1; }
             else { return -1; }
         }
 
@@ -846,6 +630,8 @@ namespace BattleBoatsProject
         public static void intro(int[,,][] renderBoard)
         {
             Console.WriteLine("make the console full screen then hit Enter");
+            Console.WriteLine("warning this can get quite flickery, especially on less powerful computers");
+            Console.WriteLine("as the console doesnt like writing bulk quickly");
             Console.ReadLine();
 
             int[,][] background = LoadObject("Background.bin");
@@ -915,6 +701,10 @@ namespace BattleBoatsProject
                 {
                     Console.Write("\b \b");
                 }
+                else if (key.Key == ConsoleKey.Backspace)
+                {
+                    output = output.Substring(0, output.Length - 1);
+                }
                 else
                 {
                     output += key.KeyChar;
@@ -925,12 +715,120 @@ namespace BattleBoatsProject
 
             return output;
         }
-
+        public static void placeBoatsGrid(int[,,][] renderBoard)
+        {
+            ClearAllObj(renderBoard);
+            PlaceObject(LoadObject("placementGrid.bin"), renderBoard, 20, 12, 1);
+            Render(renderBoard);
+        }
+        public static void placeShotsTarget(int[,,][] renderBoard, int X, int Y)
+        {
+            ClearLayer(renderBoard, 2);
+            int[,][] target = LoadObject("target.bin");
+            PlaceObject(target, renderBoard, 44 + X * 4, 16 + Y * 4, 2);
+            Render(renderBoard);
+        }
+        public static void boatsPlacementTarget(int[,,][] renderBoard, int X, int Y, bool R, int length)
+        {
+            ClearLayer(renderBoard, 2);
+            int[,][] target = LoadObject("target.bin");
+            for (int i = 0; i < length; i++)
+            {
+                if (R) { PlaceObject(target, renderBoard, 24 + X * 4 + i * 4, 16 + Y * 4, 2); }
+                else if (!R) { PlaceObject(target, renderBoard, 24 + X * 4, 16 + Y * 4 + i * 4, 2); }
+            }
+            Render(renderBoard);
+        }
+        public static void placeBoats(int[,,][] renderBoard, char[,] boatsBoard, int X, int Y)
+        {
+            ClearLayer(renderBoard, 3);
+            int[,][] boat = LoadObject("1 boat.bin");
+            for (int i = 0; i < boatsBoard.GetLength(0); i++)
+            {
+                for (int j = 0; j < boatsBoard.GetLength(0); j++)
+                {
+                    if (boatsBoard[j, i] != new char())
+                    {
+                        PlaceObject(boat, renderBoard, X + 4 * j, Y + 4 * i, 3);
+                    }
+                }
+            }
+            Render(renderBoard);
+        }
+        public static void placeShots(int[,,][] renderBoard, char[,] shotsBoard, int X, int Y)
+        {
+            ClearLayer(renderBoard, 3);
+            int[,][] hit = LoadObject("hit.bin");
+            int[,][] miss = LoadObject("miss.bin");
+            for (int i = 0; i < shotsBoard.GetLength(0); i++)
+            {
+                for (int j = 0; j < shotsBoard.GetLength(0); j++)
+                {
+                    if (shotsBoard[j, i] == '*')
+                    {
+                        PlaceObject(hit, renderBoard, X + 4 * j, Y + 4 * i, 3);
+                    }
+                    if (shotsBoard[j, i] == '~')
+                    {
+                        PlaceObject(miss, renderBoard, X + 4 * j, Y + 4 * i, 3);
+                    }
+                }
+            }
+            Render(renderBoard);
+        }
+        public static void placeShotsAndBoats(int[,,][] renderBoard, char[,] shotsBoard, char[,] boatsBoard, char[,] enemyShotsBoard)
+        {
+            ClearLayer(renderBoard, 3);
+            int[,][] hit = LoadObject("hit.bin");
+            int[,][] miss = LoadObject("miss.bin");
+            for (int i = 0; i < shotsBoard.GetLength(0); i++)
+            {
+                for (int j = 0; j < shotsBoard.GetLength(0); j++)
+                {
+                    if (shotsBoard[j, i] == '*')
+                    {
+                        PlaceObject(hit, renderBoard, 44 + 4 * j, 16 + 4 * i, 3);
+                    }
+                    if (shotsBoard[j, i] == '~')
+                    {
+                        PlaceObject(miss, renderBoard, 44 + 4 * j, 16 + 4 * i, 3);
+                    }
+                }
+            }
+            int[,][] boat = LoadObject("1 boat.bin");
+            for (int i = 0; i < boatsBoard.GetLength(0); i++)
+            {
+                for (int j = 0; j < boatsBoard.GetLength(0); j++)
+                {
+                    if (boatsBoard[j, i] != new char() && enemyShotsBoard[j, i] == '*')
+                    {
+                        PlaceObject(hit, renderBoard, 4 + 4 * j, 16 + 4 * i, 3);
+                    }
+                    else if (boatsBoard[j, i] != new char())
+                    {
+                        PlaceObject(boat, renderBoard, 4 + 4 * j, 16 + 4 * i, 3);
+                    }
+                    else if (boatsBoard[j, i] == new char() && enemyShotsBoard[j, i] == '~')
+                    {
+                        PlaceObject(miss, renderBoard, 4 + 4 * j, 16 + 4 * i, 3);
+                    }
+                }
+            }
+            Render(renderBoard);
+        }
+        public static void placeBattleGrid(int[,,][] renderBoard)
+        {
+            ClearAllObj(renderBoard);
+            PlaceObject(LoadObject("placementGrid.bin"), renderBoard, 0, 12, 1);
+            PlaceObject(LoadObject("placementGrid.bin"), renderBoard, 40, 12, 1);
+            Render(renderBoard);
+        }
     }
 
     //create a struct to store the games state
     struct Game
     {
+        public int BoardSize;
         public char[,] PlayerBoats;
         public char[,] PlayerShots;
         public char[,] ComputerBoats;
@@ -941,20 +839,17 @@ namespace BattleBoatsProject
         public bool PlayerTurn = true;
         public string fileName = "newGame.bin";
 
-        public Game(int BoardSize)
+        public Game(int boardSizeParam)
         {
-            PlayerBoats = new char[BoardSize, BoardSize];
-            PlayerShots = new char[BoardSize, BoardSize];
-            ComputerBoats = new char[BoardSize, BoardSize];
-            ComputerShots = new char[BoardSize, BoardSize];
+            BoardSize = boardSizeParam;
+            PlayerBoats = new char[boardSizeParam, boardSizeParam];
+            PlayerShots = new char[boardSizeParam, boardSizeParam];
+            ComputerBoats = new char[boardSizeParam, boardSizeParam];
+            ComputerShots = new char[boardSizeParam, boardSizeParam];
         }
     }
 }
 
-
-// \x18[#C;1m
-
 // ~ means missed shot
-// * means hit shot
-// - means blank
-// # means unhit boat
+// * means hit shot 
+//TODO: use the boats A-Z render boats all fancy
