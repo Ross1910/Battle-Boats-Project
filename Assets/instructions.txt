@@ -24,3 +24,6 @@ brings you to this page
 
 Quit:
 will close the game, functions the same as manually closing the console
+
+
+(return to menu with enter)
