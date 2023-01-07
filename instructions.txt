@@ -1,0 +1,26 @@
+Use arrow keys to navigate and enter to confirm
+
+New game:
+you will be prompted to enter a name for your save file, this will override any files with the same name and is limited to letters and numbers
+you will then be prompted to place your boats on the grid using the arrow keys and enter key.
+these boats will be what your enemy is attempting to hit.
+once you have finished this you will enter the play stage of the game
+
+Resume game:
+you will be prompted to enter the name of the save file you would like to load
+once you have finished this you will enter the play stage of the game
+
+playing the game:
+on the right grid you will take shots by navigating with the arrow keys and confirming with enter, the position you are aiming at is marked by the red dots.
+a hit is shown by a explosion and a miss by a light blue line.
+simultaniously your opponent will be shooting at your boats on the left grid, their shots will be marked so you can see how well you are doing.
+you will not be notified when a boat is destroyed.
+You can quit at any time by closing the console, you progress will be saved and can be restored with Resume Game.
+Once one player sinks all of the opponents battle ships you will be told and returned to the home screen
+
+Info:
+brings you to this page
+(not sure how you can get here if you dont know that?)
+
+Quit:
+will close the game, functions the same as manually closing the console
