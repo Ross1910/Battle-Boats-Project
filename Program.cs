@@ -166,6 +166,10 @@
                 }
 
             }
+            //show enemy boats debug
+            //Renderer.PlaceBoats(renderBoard, newGame.ComputerBoats, 24, 16);
+            //Console.ReadLine();
+
             //save the game as a file
             SaveGame(newGame);
             //start playing the game
@@ -373,7 +377,7 @@
             //clears the console
             Console.Clear();
             //outputs all lines of the instructions
-            StreamReader reader = new StreamReader(File.Open("instructions.txt", FileMode.Open));
+            StreamReader reader = new StreamReader(File.Open("Assets/instructions.txt", FileMode.Open));
             string line = "";
             while ((line = reader.ReadLine()) != null) { Console.WriteLine(line); }
             //once the user hits enter, clears the instructions
@@ -744,20 +748,28 @@
                 //if the character is backspace
                 if (key.Key == ConsoleKey.Backspace)
                 {
-                    //remove one character from the string and decrease the length
-                    output = output.Substring(0, output.Length - 1);
-                    length--;
+                    if (length > 0)
+                    {
+                        //remove one character from the string and decrease the length
+                        output = output.Substring(0, output.Length - 1);
+                        length--;
+                        Console.Write(" \b");
+                    }
+                    else { Console.Write(" "); }
                 }
                 //if the character is a number or letter
                 else if ((key.KeyChar >= 'a' && key.KeyChar <= 'z') || (key.KeyChar >= 'A' && key.KeyChar <= 'Z') || (key.KeyChar >= '0' && key.KeyChar <= '9'))
                 {
-                    //add the character to the output and incrememnt the length
-                    output += key.KeyChar;
-                    length++;
                     //if the length is greater than the maximum remove the character 
-                    if (length > maxLength && maxLength != -1)
+                    if (length >= maxLength && maxLength != -1)
                     {
                         Console.Write("\b \b");
+                    }
+                    else
+                    {
+                        //add the character to the output and incrememnt the length
+                        output += key.KeyChar;
+                        length++;
                     }
                 }
                 //if it is not a number or letter remove it
